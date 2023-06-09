@@ -41,16 +41,19 @@ mod Minter {
     use super::GaugeControllerDispatcherTrait;
 
     struct Storage {
+        // @dev JDI token address
         _token: ContractAddress,
+        // @dev Gauge controller address
         _controller: ContractAddress,
         // @dev user, gauge -> value
         _minted: LegacyMap::<(ContractAddress, ContractAddress), u256>,
-        // @dev minter, user -> can mint?
+        // @dev minter, user -> true if allowed to mint
         _allowed_to_mint_for: LegacyMap::<(ContractAddress, ContractAddress), bool>,
         // @dev reentrancy guard
         _reentrancy_locked: felt252,
     }
 
+    // @notice An event emitted whenever _mint_for() is called.
     #[event]
     fn Minted(recipient: ContractAddress, gauge: ContractAddress, minted: u256) {}
 
