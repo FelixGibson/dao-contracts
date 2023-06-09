@@ -10,6 +10,7 @@ test = "protostar test"
 
 [dependencies]
 starknet = ">=1.1.0"
+# orion = { git = "https://github.com/gizatechxyz/orion.git" }
 # quaireaux_math = { git = "https://github.com/keep-starknet-strange/quaireaux.git" }
 
 [[target.starknet-contract]]

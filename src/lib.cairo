@@ -4,3 +4,5 @@ mod erc20_jedi;
 mod tests;
 
 mod utils;
+
+mod minter;

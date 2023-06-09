@@ -1,4 +1,3 @@
-use core::traits::Into;
 // @title JediSwap DAO Token
 // @author JediSwap
 // @license MIT
