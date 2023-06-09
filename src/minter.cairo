@@ -5,18 +5,18 @@
 use starknet::ContractAddress;
 
 #[abi]
-trait LiquidityGauge {
+trait ILiquidityGauge {
     fn integrate_fraction(user: ContractAddress) -> u256;
     fn user_checkpoint(user: ContractAddress);
 }
 
 #[abi]
-trait ERC20JDI {
+trait IERC20JDI {
     fn mint(recipient: ContractAddress, amount: u256) -> bool;
 }
 
 #[abi]
-trait GaugeController {
+trait IGaugeController {
     fn gauge_types(gauge: ContractAddress) -> u256;
 }
 
@@ -33,12 +33,12 @@ mod Minter {
     use option::OptionTrait;
     use integer::u256_from_felt252;
     use array::SpanTrait;
-    use super::LiquidityGaugeDispatcher;
-    use super::LiquidityGaugeDispatcherTrait;
-    use super::ERC20JDIDispatcher;
-    use super::ERC20JDIDispatcherTrait;
-    use super::GaugeControllerDispatcher;
-    use super::GaugeControllerDispatcherTrait;
+    use super::ILiquidityGaugeDispatcher;
+    use super::ILiquidityGaugeDispatcherTrait;
+    use super::IERC20JDIDispatcher;
+    use super::IERC20JDIDispatcherTrait;
+    use super::IGaugeControllerDispatcher;
+    use super::IGaugeControllerDispatcherTrait;
 
     struct Storage {
         // @dev JDI token address
@@ -160,19 +160,19 @@ mod Minter {
     }
 
     fn _mint_for(gauge: ContractAddress, for_user: ContractAddress) {
-        assert(GaugeControllerDispatcher {
+        assert(IGaugeControllerDispatcher {
             contract_address: _controller::read()
         }.gauge_types(gauge) > 0, 'gauge is not added');  // differ from Curve which is >= 0. why since u256 cannot be negative?
-        LiquidityGaugeDispatcher {
+        ILiquidityGaugeDispatcher {
             contract_address: gauge
         }.user_checkpoint(for_user);
-        let total_mint = LiquidityGaugeDispatcher {
+        let total_mint = ILiquidityGaugeDispatcher {
             contract_address: gauge
         }.integrate_fraction(for_user);
         let to_mint = total_mint - _minted::read((for_user, gauge));
         if to_mint > 0 {
             _minted::write((for_user, gauge), total_mint);
-            ERC20JDIDispatcher {
+            IERC20JDIDispatcher {
                 contract_address: _token::read()
             }.mint(for_user, to_mint);
             Minted(for_user, gauge, to_mint);
