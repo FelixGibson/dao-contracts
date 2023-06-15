@@ -26,16 +26,19 @@ mod ERC20JDI {
 
 
     struct Storage {
-        // Special address
+        // @dev minter address
         _minter: ContractAddress,
-        // Supply variables
+        // @dev mining epoch, starts from 0, every epoch is 1 year
         _mining_epoch: u256,
+        // @dev the start timestamp of the current epoch
         _start_epoch_time: u256,
+        // @dev the rate of the current epoch
         _rate: u256,
+        // @dev the supply at the start of the current epoch
         _start_epoch_supply: u256,
     }
 
-    // General constants
+    // @dev General constants
     const YEAR: u256 = 31536000; // 86400 * 365
 
 
@@ -56,12 +59,17 @@ mod ERC20JDI {
     const RATE_DENOMINATOR: felt252 = 1000000000000000000; // 10 ** 18
     const INFLATION_DELAY: felt252 = 86400; // one day
 
+    // @notice An event emitted whenever _update_mining_parameters() is called.
     #[event]
     fn UpdateMiningParameters(time: u64, rate: u256, supply: u256) {}
 
+    // @notice An event emitted whenever set_minter() is called.
     #[event]
     fn SetMinter(minter: ContractAddress) {}
 
+    // @notice contract constructor
+    // @param name_ The name of the token
+    // @param symbol_ The symbol of the token
     #[constructor]
     fn constructor(name_: felt252, symbol_: felt252) {
         let initial_supply: u256 = INITIAL_SUPPLY.into();
@@ -78,56 +86,81 @@ mod ERC20JDI {
         _start_epoch_supply::write(initial_supply);
     }
 
+    // @notice Name of the token
+    // @return name
     #[view]
     fn name() -> felt252 {
         ERC20::name()
     }
 
+    // @notice Symbol of the token
+    // @return symbol
     #[view]
     fn symbol() -> felt252 {
         ERC20::symbol()
     }
 
+    // @notice Decimals of the token
+    // @return decimals
     #[view]
     fn decimals() -> u8 {
         ERC20::decimals()
     }
 
+    // @notice Total Supply of the token
+    // @return totalSupply
     #[view]
     fn total_supply() -> u256 {
         ERC20::total_supply()
     }
 
+    // @notice Balance of `account`
+    // @param account Account address whose balance is fetched
+    // @return balance Balance of `account`
     #[view]
     fn balance_of(account: ContractAddress) -> u256 {
         ERC20::balance_of(account)
     }
 
+    // @notice Allowance which `spender` can spend on behalf of `owner`
+    // @param owner Account address whose tokens are spent
+    // @param spender Account address which can spend the tokens
+    // @return remaining Remaining allowance of `spender` on behalf of `owner`
     #[view]
     fn allowance(owner: ContractAddress, spender: ContractAddress) -> u256 {
         ERC20::allowance(owner, spender)
     }
 
+    // @notice Get the minter's address
+    // @return minter
     #[view]
     fn minter() -> ContractAddress {
         _minter::read()
     }
 
+    // @notice Get the current mining epoch
+    // @return mining_epoch
     #[view]
     fn mining_epoch() -> u256 {
         _mining_epoch::read()
     }
 
+    // @notice Get the start timestamp of the current epoch
+    // @return start_epoch_time
     #[view]
     fn start_epoch_time() -> u256 {
         _start_epoch_time::read()
     }
 
+    // @notice Get the rate of the current epoch
+    // @return rate
     #[view]
     fn rate() -> u256 {
         _rate::read()
     }
 
+    // @notice Get the owner of the contract
+    // @return owner
     #[view]
     fn owner() -> ContractAddress {
         Ownable::owner()
@@ -188,34 +221,54 @@ mod ERC20JDI {
             cur_epoch_time += RATE_REDUCTION_TIME.into();
         };
         return to_mint;
-
-
     }
 
     //
     // Externals
     //
 
+    // @notice Transfer `amount` tokens from `caller` to `recipient`
+    // @param recipient Account address to which tokens are transferred
+    // @param amount Amount of tokens to transfer
+    // @return success 0 or 1
     #[external]
     fn transfer(recipient: ContractAddress, amount: u256) -> bool {
         ERC20::transfer(recipient, amount)
     }
 
+    // @notice Transfer `amount` tokens from `sender` to `recipient`
+    // @dev Checks for allowance.
+    // @param sender Account address from which tokens are transferred
+    // @param recipient Account address to which tokens are transferred
+    // @param amount Amount of tokens to transfer
+    // @return success 0 or 1
     #[external]
     fn transfer_from(sender: ContractAddress, recipient: ContractAddress, amount: u256) -> bool {
         ERC20::transfer_from(sender, recipient, amount)
     }
 
+    // @notice Approve `spender` to transfer `amount` tokens on behalf of `caller`
+    // @param spender The address which will spend the funds
+    // @param amount The amount of tokens to be spent
+    // @return success 0 or 1
     #[external]
     fn approve(spender: ContractAddress, amount: u256) -> bool {
         ERC20::approve(spender, amount)
     }
 
+    // @notice Increase allowance of `spender` to transfer `added_value` more tokens on behalf of `caller`
+    // @param spender The address which will spend the funds
+    // @param added_value The increased amount of tokens to be spent
+    // @return success 0 or 1
     #[external]
     fn increase_allowance(spender: ContractAddress, added_value: u256) -> bool {
         ERC20::increase_allowance(spender, added_value)
     }
 
+    // @notice Decrease allowance of `spender` to transfer `subtracted_value` less tokens on behalf of `caller`
+    // @param spender The address which will spend the funds
+    // @param subtracted_value The decreased amount of tokens to be spent
+    // @return success 0 or 1
     #[external]
     fn decrease_allowance(spender: ContractAddress, subtracted_value: u256) -> bool {
         ERC20::decrease_allowance(spender, subtracted_value)
@@ -255,6 +308,8 @@ mod ERC20JDI {
         SetMinter(minter_address);
     }
 
+    // @notice Transfer ownership of the contract to a new account (`new_owner`), Only callable by the owner
+    // @param new_owner Address of the new owner
     #[external]
     fn transfer_ownership(new_owner: ContractAddress) {
         Ownable::transfer_ownership(new_owner);
