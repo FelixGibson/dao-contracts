@@ -6,3 +6,5 @@ mod tests;
 mod utils;
 
 mod minter;
+
+mod vesting_escrow;
